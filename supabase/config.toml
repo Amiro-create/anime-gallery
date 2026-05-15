@@ -1,0 +1,22 @@
+# Supabase 项目最简配置
+# 文档: https://supabase.com/docs/guides/local-development
+
+project_id = "anime-gallery"
+
+[api]
+port = 54321
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[functions]
+scrape-anime = true
+
+[auth]
+enable_signup = true
+
+[storage]
+enabled = true
