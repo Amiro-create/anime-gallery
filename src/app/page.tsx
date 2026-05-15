@@ -1,8 +1,9 @@
 import type { Anime } from '@/lib/types'
+import { supabase } from '@/lib/supabase'
 import BannerCarousel from '@/components/BannerCarousel'
 import AnimeGrid from '@/components/AnimeGrid'
 
-const MOCK_ANIMES: Anime[] = [
+const FALLBACK_ANIMES: Anime[] = [
   {
     id: '1',
     title: '进击的巨人',
@@ -38,18 +39,17 @@ const MOCK_ANIMES: Anime[] = [
   },
 ]
 
-export default function Home() {
-  // TODO: Replace mock data with Supabase fetch when env vars are configured:
-  // const { data } = await supabase.from('animes').select('*').order('created_at', { ascending: false })
-  // const animes = (data as Anime[]) ?? MOCK_ANIMES
-  const animes = MOCK_ANIMES
+export default async function Home() {
+  const { data } = await supabase
+    .from('anime')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  const animes: Anime[] = (data && data.length > 0) ? data as Anime[] : FALLBACK_ANIMES
 
   return (
     <div className="w-full">
-      {/* Banner Carousel */}
       <BannerCarousel animes={animes} />
-
-      {/* Anime Grid Section */}
       <section className="container mx-auto px-4 py-10">
         <h2 className="text-2xl font-bold text-foreground mb-6">全部番剧</h2>
         <AnimeGrid animes={animes} />
