@@ -50,18 +50,7 @@ export default function SceneToolbar({
         {/* Separator */}
         <div className="w-px h-5 bg-white/15 mx-1" />
 
-        {/* Mode toggle */}
-        <button
-          onClick={onToggleMode}
-          className="flex items-center gap-1.5 px-3 h-9 rounded-full
-                     text-white/70 hover:text-white hover:bg-white/10
-                     text-sm font-medium transition-colors"
-        >
-          {mode === '2d' ? '切换 2.5D' : '切换 2D'}
-        </button>
-
-        {/* Separator */}
-        <div className="w-px h-5 bg-white/15 mx-1" />
+        {/* Mode toggle — disabled until 2.5D is ready */}
 
         {/* Quote toggle */}
         <button
