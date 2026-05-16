@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import type { Anime, Scene } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +35,8 @@ const STATUS_CONFIG: Record<
 // Page
 // ---------------------------------------------------------------------------
 export default function AdminPage() {
+  const { user, loading: authLoading } = useAuth()
+
   const [tab, setTab] = useState('pending')
 
   // Tab 1: Pending
@@ -195,6 +198,29 @@ export default function AdminPage() {
       fetchAnimes()
     }
     setAdding(false)
+  }
+
+  // -------------------------------------------------------------------------
+  // Auth gate
+  // -------------------------------------------------------------------------
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+        <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  const isAdmin = (user?.app_metadata as Record<string, unknown> | undefined)?.role === 'admin'
+
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] gap-4">
+        <XIcon className="size-16 text-muted-foreground/40" />
+        <p className="text-2xl font-bold text-muted-foreground">无权访问</p>
+        <p className="text-sm text-muted-foreground/60">仅管理员可访问此页面</p>
+      </div>
+    )
   }
 
   // -------------------------------------------------------------------------
