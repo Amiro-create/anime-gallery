@@ -68,7 +68,7 @@ function ParallaxPlane({ textureUrl, z, parallaxFactor, mouseRef }: ParallaxPlan
 
   return (
     <mesh ref={meshRef} position={[0, 0, z]}>
-      <planeGeometry args={[2.65, 1.49]} />
+      <planeGeometry args={[4.64, 2.61]} />
       <meshBasicMaterial map={texture} transparent opacity={0.92} />
     </mesh>
   )
