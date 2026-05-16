@@ -45,12 +45,15 @@ export default function ScenePageClient({ animeId, sceneId, scene }: ScenePageCl
             {/* Scene image */}
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${scene.image_url})` }}
+              style={{
+                backgroundImage: `url(${scene.image_url})`,
+                filter: 'brightness(0.7)',
+              }}
             />
 
             {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
 
             {/* Sakura particle effect */}
             <ParticleEffect type="sakura" />
