@@ -23,19 +23,36 @@ function ParallaxPlane({ textureUrl, z, parallaxFactor, mouseRef }: ParallaxPlan
   const [error, setError] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
     const loader = new THREE.TextureLoader()
+    loader.crossOrigin = 'anonymous'
+
+    // Timeout safety: abort if texture takes >15s
+    const timer = setTimeout(() => {
+      if (!cancelled) setError(true)
+    }, 15000)
+
     loader.load(
       textureUrl,
       (tex) => {
+        if (cancelled) return
+        clearTimeout(timer)
         tex.minFilter = THREE.LinearFilter
         tex.magFilter = THREE.LinearFilter
         tex.colorSpace = THREE.SRGBColorSpace
         setTexture(tex)
       },
       undefined,
-      () => setError(true),
+      () => {
+        if (!cancelled) {
+          clearTimeout(timer)
+          setError(true)
+        }
+      },
     )
     return () => {
+      cancelled = true
+      clearTimeout(timer)
       if (texture) texture.dispose()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,6 +126,12 @@ interface ParallaxSceneProps {
 
 export default function ParallaxScene({ layers }: ParallaxSceneProps) {
   const [hasError, setHasError] = useState(false)
+
+  // Safety: auto-abort 3D after 10s regardless of texture status
+  useEffect(() => {
+    const t = setTimeout(() => setHasError(true), 10000)
+    return () => clearTimeout(t)
+  }, [])
 
   if (hasError) {
     return <FallbackImage src={layers.bg} alt="场景背景" />
