@@ -68,7 +68,7 @@ function ParallaxPlane({ textureUrl, z, parallaxFactor, mouseRef }: ParallaxPlan
 
   return (
     <mesh ref={meshRef} position={[0, 0, z]}>
-      <planeGeometry args={[3.6, 2.025]} />
+      <planeGeometry args={[5.2, 2.925]} />
       <meshBasicMaterial map={texture} transparent opacity={0.92} />
     </mesh>
   )
@@ -140,7 +140,7 @@ export default function ParallaxScene({ layers }: ParallaxSceneProps) {
       <Suspense fallback={null}>
         <ErrorBoundary onError={() => setHasError(true)}>
           <Canvas
-            camera={{ position: [0, 0, 3], fov: 48 }}
+            camera={{ position: [0, 0, 3], fov: 55 }}
             style={{ position: 'absolute', inset: 0 }}
           >
             <SceneContent layers={layers} onReady={() => setReady(true)} />
