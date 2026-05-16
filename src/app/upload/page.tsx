@@ -1,14 +1,22 @@
 'use client'
 
-import { useState, useCallback, useRef, type DragEvent } from 'react'
+import { useState, useCallback, useRef, useEffect, type DragEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import type { Anime } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { toast } from 'sonner'
 import {
   UploadIcon,
@@ -55,6 +63,8 @@ export default function UploadPage() {
 
   // Form state
   const [animeId, setAnimeId] = useState('')
+  const [animeList, setAnimeList] = useState<Anime[]>([])
+  const [animeLoading, setAnimeLoading] = useState(true)
   const [episode, setEpisode] = useState('')
   const [title, setTitle] = useState('')
   const [quote, setQuote] = useState('')
@@ -150,8 +160,24 @@ export default function UploadPage() {
   }, [])
 
   // -----------------------------------------------------------------------
-  // Submit
+  // Fetch anime list on mount
   // -----------------------------------------------------------------------
+  useEffect(() => {
+    async function fetchAnime() {
+      try {
+        const { data } = await supabase
+          .from('anime')
+          .select('*')
+          .order('title', { ascending: true })
+        setAnimeList((data as Anime[]) ?? [])
+      } catch {
+        // Supabase unreachable — show empty list
+      } finally {
+        setAnimeLoading(false)
+      }
+    }
+    fetchAnime()
+  }, [])
   const handleSubmit = async () => {
     if (!user) {
       toast.error('请先登录')
@@ -161,8 +187,8 @@ export default function UploadPage() {
       toast.error('请上传场景图片')
       return
     }
-    if (!animeId.trim()) {
-      toast.error('请输入番剧 ID')
+    if (!animeId) {
+      toast.error('请选择番剧')
       return
     }
     if (!title.trim()) {
@@ -315,15 +341,27 @@ export default function UploadPage() {
         {/* --------------------------------------------------------------- */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="animeId">番剧 ID</Label>
-            <Input
-              id="animeId"
-              placeholder="例如：1, 2, 3..."
+            <Label htmlFor="animeId">所属番剧</Label>
+            <Select
               value={animeId}
-              onChange={(e) => setAnimeId(e.target.value)}
-            />
+              onValueChange={(v) => setAnimeId(v ?? '')}
+              disabled={animeLoading}
+            >
+              <SelectTrigger id="animeId">
+                <SelectValue placeholder={animeLoading ? '加载中...' : '选择番剧'} />
+              </SelectTrigger>
+              <SelectContent>
+                {animeList.map((anime) => (
+                  <SelectItem key={anime.id} value={anime.id}>
+                    {anime.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground/60">
-              对应番剧的唯一标识
+              {animeList.length === 0 && !animeLoading
+                ? '暂无可用番剧，请先联系管理员添加'
+                : `共 ${animeList.length} 部番剧可选`}
             </p>
           </div>
           <div className="space-y-1.5">

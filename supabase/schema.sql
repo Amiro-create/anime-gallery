@@ -41,3 +41,10 @@ CREATE TABLE "like" (
   created_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(user_id, scene_id)
 );
+
+-- ============================================================================
+-- Storage bucket for scene uploads (run in Supabase SQL Editor)
+-- ============================================================================
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('scenes', 'scenes', true);
+-- CREATE POLICY "Public read" ON storage.objects FOR SELECT USING (bucket_id = 'scenes');
+-- CREATE POLICY "Auth upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'scenes' AND auth.role() = 'authenticated');

@@ -6,83 +6,18 @@ import { Heart, Tag } from 'lucide-react'
 import SceneToolbar from '@/components/SceneToolbar'
 import ParticleEffect from '@/components/ParticleEffect'
 import ParallaxScene from '@/components/ParallaxScene'
+import type { SceneDisplayData } from './page'
 
 interface ScenePageClientProps {
   animeId: string
   sceneId: string
+  scene: SceneDisplayData
 }
 
-// Mock scene data for demonstration
-function getMockSceneData(animeId: string, sceneId: string) {
-  const sceneIndex = parseInt(sceneId.replace(`s${animeId}-`, ''), 10) || 1
-
-  const animeTitles: Record<string, string> = {
-    '1': '进击的巨人',
-    '2': '紫罗兰永恒花园',
-    '3': '辉夜大小姐想让我告白',
-  }
-
-  const animeColors: Record<string, string> = {
-    '1': '#8b1a1a',
-    '2': '#7c3aed',
-    '3': '#db2777',
-  }
-
-  const quotes: Record<string, string> = {
-    's1-1': '那一天，人类回想起了受他们支配的恐惧',
-    's1-5': '什么都无法舍弃的人，什么都无法改变',
-    's2-1': '我想知道「我爱你」的含义',
-    's2-4': '你已不再是工具，而是人如其名的人',
-    's3-8': '月色真美',
-  }
-
-  const tags: Record<string, string[]> = {
-    '1': ['热血', '战斗', '史诗'],
-    '2': ['治愈', '催泪', '文艺'],
-    '3': ['恋爱', '搞笑', '校园'],
-  }
-
-  const titles: Record<string, string> = {
-    's1-1': '致两千年后的你',
-    's1-2': '那一天',
-    's1-5': '初阵',
-    's2-1': '「我爱你」与自动手记人偶',
-    's2-4': '你已不再是工具，而是人如其名的人',
-    's3-1': '想让对方告白的恋爱头脑战',
-    's3-8': '烟花之夜的奇迹',
-  }
-
-  // Use placeholder images that work well as parallax layers
-  const seed = sceneId
-  const layers = {
-    bg: `https://picsum.photos/seed/${seed}-bg/1200/675`,
-    mg: `https://picsum.photos/seed/${seed}-mg/1200/675`,
-    fg: `https://picsum.photos/seed/${seed}-fg/1200/675`,
-  }
-
-  return {
-    id: sceneId,
-    anime_id: animeId,
-    episode: sceneIndex,
-    title: titles[sceneId] ?? `场景 ${sceneIndex}`,
-    image_url: `https://picsum.photos/seed/${seed}/1920/1080`,
-    quote: quotes[sceneId] ?? undefined,
-    anime_title: animeTitles[animeId] ?? '未知番剧',
-    primary_color: animeColors[animeId] ?? '#6366f1',
-    tags: tags[animeId] ?? [],
-    layers,
-    likes_count: 80 + Math.floor(Math.random() * 200),
-    status: 'approved' as const,
-    created_at: '2024-06-01',
-  }
-}
-
-export default function ScenePageClient({ animeId, sceneId }: ScenePageClientProps) {
+export default function ScenePageClient({ animeId, sceneId, scene }: ScenePageClientProps) {
   const [mode, setMode] = useState<'2d' | '2.5d'>('2d')
   const [showQuote, setShowQuote] = useState(true)
   const [liked, setLiked] = useState(false)
-
-  const scene = getMockSceneData(animeId, sceneId)
 
   const handleToggleMode = () => {
     setMode((prev) => (prev === '2d' ? '2.5d' : '2d'))
