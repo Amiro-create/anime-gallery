@@ -27,7 +27,6 @@ function ParallaxPlane({ textureUrl, z, parallaxFactor, mouseRef }: ParallaxPlan
     const loader = new THREE.TextureLoader()
     loader.crossOrigin = 'anonymous'
 
-    // Timeout safety: abort if texture takes >15s
     const timer = setTimeout(() => {
       if (!cancelled) setError(true)
     }, 15000)
@@ -62,27 +61,31 @@ function ParallaxPlane({ textureUrl, z, parallaxFactor, mouseRef }: ParallaxPlan
     if (!meshRef.current) return
     const mouse = mouseRef.current
     meshRef.current.position.x = mouse.x * parallaxFactor
-    meshRef.current.position.y = mouse.y * parallaxFactor * 0.6
+    meshRef.current.position.y = mouse.y * parallaxFactor * 0.5
   })
 
   if (error || !texture) return null
 
   return (
     <mesh ref={meshRef} position={[0, 0, z]}>
-      <planeGeometry args={[16, 9]} />
-      <meshBasicMaterial map={texture} transparent opacity={z === 0 ? 1 : 0.85} />
+      <planeGeometry args={[2.35, 1]} />
+      <meshBasicMaterial map={texture} transparent opacity={0.92} />
     </mesh>
   )
 }
 
-function SceneContent({ layers }: { layers: ParallaxLayers }) {
+function SceneContent({ layers, onReady }: { layers: ParallaxLayers; onReady: () => void }) {
   const mouseRef = useRef({ x: 0, y: 0 })
   const { size } = useThree()
 
   useEffect(() => {
+    onReady()
+  }, [onReady])
+
+  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      mouseRef.current.x = ((e.clientX / size.width) - 0.5) * 2
-      mouseRef.current.y = -((e.clientY / size.height) - 0.5) * 2
+      mouseRef.current.x = ((e.clientX / size.width) - 0.5) * 0.8
+      mouseRef.current.y = -((e.clientY / size.height) - 0.5) * 0.8
     }
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
@@ -90,33 +93,14 @@ function SceneContent({ layers }: { layers: ParallaxLayers }) {
 
   return (
     <>
-      {/* Background layer (deepest) */}
-      <ParallaxPlane textureUrl={layers.bg} z={-2} parallaxFactor={0.15} mouseRef={mouseRef} />
-
-      {/* Midground layer */}
+      <ParallaxPlane textureUrl={layers.bg} z={-2.5} parallaxFactor={0.08} mouseRef={mouseRef} />
       {layers.mg && (
-        <ParallaxPlane textureUrl={layers.mg} z={-1} parallaxFactor={0.4} mouseRef={mouseRef} />
+        <ParallaxPlane textureUrl={layers.mg} z={-1} parallaxFactor={0.2} mouseRef={mouseRef} />
       )}
-
-      {/* Foreground layer (closest) */}
       {layers.fg && (
-        <ParallaxPlane textureUrl={layers.fg} z={0} parallaxFactor={0.8} mouseRef={mouseRef} />
+        <ParallaxPlane textureUrl={layers.fg} z={0.5} parallaxFactor={0.4} mouseRef={mouseRef} />
       )}
     </>
-  )
-}
-
-function FallbackImage({ src, alt }: { src: string; alt: string }) {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={alt}
-        className="w-full h-full object-cover opacity-50"
-      />
-      <p className="absolute text-white/40 text-sm">3D 渲染加载中...</p>
-    </div>
   )
 }
 
@@ -126,27 +110,40 @@ interface ParallaxSceneProps {
 
 export default function ParallaxScene({ layers }: ParallaxSceneProps) {
   const [hasError, setHasError] = useState(false)
+  const [ready, setReady] = useState(false)
 
-  // Safety: auto-abort 3D after 10s regardless of texture status
   useEffect(() => {
-    const t = setTimeout(() => setHasError(true), 10000)
+    const t = setTimeout(() => {
+      if (!ready) setHasError(true)
+    }, 12000)
     return () => clearTimeout(t)
-  }, [])
+  }, [ready])
 
   if (hasError) {
-    return <FallbackImage src={layers.bg} alt="场景背景" />
+    return (
+      <div className="absolute inset-0 bg-black">
+        <img src={layers.bg} alt="" className="w-full h-full object-contain opacity-90" />
+      </div>
+    )
   }
 
   return (
     <div className="absolute inset-0">
-      <FallbackImage src={layers.bg} alt="场景背景" />
+      {/* Loading fallback - shown until 3D is ready */}
+      {!ready && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+          <img src={layers.bg} alt="" className="w-full h-full object-contain opacity-40" />
+          <p className="absolute text-white/30 text-sm">空间效果加载中...</p>
+        </div>
+      )}
+
       <Suspense fallback={null}>
         <ErrorBoundary onError={() => setHasError(true)}>
           <Canvas
-            camera={{ position: [0, 0, 5], fov: 45 }}
+            camera={{ position: [0, 0, 2.5], fov: 42 }}
             style={{ position: 'absolute', inset: 0 }}
           >
-            <SceneContent layers={layers} />
+            <SceneContent layers={layers} onReady={() => setReady(true)} />
           </Canvas>
         </ErrorBoundary>
       </Suspense>
@@ -154,7 +151,6 @@ export default function ParallaxScene({ layers }: ParallaxSceneProps) {
   )
 }
 
-// Simple error boundary for Three.js
 function ErrorBoundary({ children, onError }: { children: React.ReactNode; onError: () => void }) {
   useEffect(() => {
     const handler = (e: ErrorEvent) => {
